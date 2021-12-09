@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="matrixManagement.js"></script>
+    <title>TP4</title>
+</head>
+<body>
+<h1>DataViz TP4</h1>
+<div id="matrice"></div>
+<script>
+    // Definition de la taille du svg
+    const margin = {top: 0, right: 30, bottom: 20, left: 10},
+        width = 960,
+        height = 960,
+        rWidth = 5,
+        rHeight = 5;
+
+    // ajout du svg à une 'div id="matrice"' déjà créee dans la page html
+    var svg = d3
+        .select("#matrice")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.json("got_social_graph.json").then(function (json) {
+        nodes = json.nodes
+        edges = json.links
+        adjancencymatrix = createAdjacencyMatrix(nodes, edges)
+
+
+        var scale = d3
+            .scaleQuantize()
+            .range(d3.schemeBlues[9])
+            .domain([0, d3.max(edges, d => d.weight)]);
+
+
+        matrixViz = svg.selectAll("rect")
+            .data(adjancencymatrix)
+            .join("rect")
+            .attr("width", rWidth)
+            .attr("height", rHeight)
+            .attr("x", function (d) {
+                return d.x * rWidth;
+            })
+            .attr("y", function (d) {
+                return d.y * rHeight;
+            })
+            .style("stroke", "black")
+            .style("stroke-width", "0px")
+            .style("fill", function (d) {
+                return scale(d.weight);
+            })
+
+        var positionsPersonnages = d3.range(nodes.length);
+        var echellexy = d3.scaleBand()
+            .range([0, width]) // TODO correspond [0, largeur du dessin]
+            .domain(positionsPersonnages)
+            .paddingInner(0.1)
+            .align(0)
+            .round(true);
+
+        var labels = d3.select("svg")
+            .append("g")
+            .attr("transform", "translate(60, 60)")
+            .style("font-size", "8px")
+            .style("font-family", "sans-serif");
+
+        var columns = labels
+            .append("g")
+            .selectAll()
+            .data(nodes)
+            .join("text")
+            .text((d) => d.character)
+            .attr("x", d => echellexy(d.zone))
+            .attr("transform", "rotate(-90)"); // on tourne tout l'axe de 90°
+
+
+        var rows = labels
+            .append("g")
+            .selectAll()
+            .data(nodes)
+            .join("text")
+            .attr("y", d => echellexy(d.zone))
+            .text((d) => d.character);
+    });
+</script>
+</body>
+</html>
