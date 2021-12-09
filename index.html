@@ -11,11 +11,9 @@
 <div id="matrice"></div>
 <script>
     // Definition de la taille du svg
-    const margin = {top: 0, right: 30, bottom: 20, left: 10},
+    const margin = {top: 30, right: 30, bottom: 20, left: 50},
         width = 960,
-        height = 960,
-        rWidth = 5,
-        rHeight = 5;
+        height = 960;
 
     // ajout du svg à une 'div id="matrice"' déjà créee dans la page html
     var svg = d3
@@ -30,6 +28,9 @@
         nodes = json.nodes
         edges = json.links
         adjancencymatrix = createAdjacencyMatrix(nodes, edges)
+
+        const rWidth = Math.floor(width / nodes.length),
+            rHeight = Math.floor(height / nodes.length);
 
 
         var scale = d3
@@ -57,7 +58,7 @@
 
         var positionsPersonnages = d3.range(nodes.length);
         var echellexy = d3.scaleBand()
-            .range([0, width]) // TODO correspond [0, largeur du dessin]
+            .range([0, width])
             .domain(positionsPersonnages)
             .paddingInner(0.1)
             .align(0)
@@ -69,13 +70,15 @@
             .style("font-size", "8px")
             .style("font-family", "sans-serif");
 
+        const fx = 8;
         var columns = labels
             .append("g")
             .selectAll()
             .data(nodes)
             .join("text")
             .text((d) => d.character)
-            .attr("x", d => echellexy(d.zone))
+            .attr("y", d => echellexy(d.id) - (60 - fx) + margin.left)
+            .attr("x", 60 - (margin.top) + fx / 2)
             .attr("transform", "rotate(-90)"); // on tourne tout l'axe de 90°
 
 
@@ -84,8 +87,10 @@
             .selectAll()
             .data(nodes)
             .join("text")
-            .attr("y", d => echellexy(d.zone))
-            .text((d) => d.character);
+            .text((d) => d.character)
+            .attr("text-anchor", "end")
+            .attr("x", -60 + (margin.left) - fx / 2)
+            .attr("y", d => echellexy(d.id) - (60 - fx) + margin.top)
     });
 </script>
 </body>
