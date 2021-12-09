@@ -25,9 +25,10 @@
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     d3.json("got_social_graph.json").then(function (json) {
-        nodes = json.nodes
-        edges = json.links
-        adjancencymatrix = createAdjacencyMatrix(nodes, edges)
+        nodes = json.nodes;
+        links = json.links;
+        adjancencymatrix = createAdjacencyMatrix(nodes, links, undefined, true);
+
 
         const rWidth = Math.floor(width / nodes.length),
             rHeight = Math.floor(height / nodes.length);
@@ -36,8 +37,10 @@
         var scale = d3
             .scaleQuantize()
             .range(d3.schemeBlues[9])
-            .domain([0, d3.max(edges, d => d.weight)]);
-
+            .domain([0, d3.max(links, d => d.weight)]);
+        var zoneScale = d3.scaleOrdinal(d3.schemeCategory10);
+        const maxWeight = d3.max(links, d => d.weight);
+        console.log(maxWeight)
 
         matrixViz = svg.selectAll("rect")
             .data(adjancencymatrix)
@@ -53,8 +56,11 @@
             .style("stroke", "black")
             .style("stroke-width", "0px")
             .style("fill", function (d) {
-                return scale(d.weight);
+                if (d.zone_s === d.zone_t)
+                    return zoneScale(d.zone_s)
+                return "#eee";
             })
+            .style("opacity", d => (d.weight * 10) / maxWeight);
 
         var positionsPersonnages = d3.range(nodes.length);
         var echellexy = d3.scaleBand()
